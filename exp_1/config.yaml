@@ -4,10 +4,9 @@ wandb:
   exp_name: first_exp
   tags: [BASE]
 path:
-  data_file_name: "/content/drive/MyDrive/高速化ブログ/data/train_twitter.csv"
-  train_dic_path: ""
+  train_dic_path: "/content/drive/MyDrive/卒論/data/train_dict.pkl"
   checkpoint_path: checkpoints
-  own_sampler_path: ""
+  own_sampler_path: "/content/drive/MyDrive/卒論/data/own_sampler.pkl"
   read_trin_dict: true
 model:
   d_model: 300
