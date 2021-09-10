@@ -1,0 +1,29 @@
+wandb:
+  project: horse2vec
+  exp_num: 1
+  exp_name: first_exp
+  tags: [BASE]
+path:
+  data_file_name: "/content/drive/MyDrive/高速化ブログ/data/train_twitter.csv"
+  train_dic_path: ""
+  checkpoint_path: checkpoints
+  own_sampler_path: ""
+  read_trin_dict: true
+model:
+  d_model: 300
+  pad_idx: 187255
+  worst_rank: 18
+  num_heads: 5
+  n_transformer: 4
+  n_added_futures: 16
+training:
+  n_epochs: 500
+  batch_size: 1024
+  val_nun: 300
+  learning_rate: 0.00001
+  layer_eps=: 0.0001
+  target_key: "time"
+callbacks:
+  patience: 50
+  patience_min_delta: 0
+  save_top_k: 1
