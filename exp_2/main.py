@@ -220,10 +220,10 @@ class CustumBert(pl.LightningModule):
         self.n_times = n_times - 1
 
         self.emb = nn.Embedding(self.padding_idx + 1, self.d_model, self.padding_idx)
-        self.attns = nn.ModuleList([nn.MultiheadAttention(self.d_model, num_heads=num_heads, dropout=0.1, batch_first=True) for _ in range(self.n_times)])
+        self.attns = nn.ModuleList([nn.MultiheadAttention(self.d_model, num_heads=num_heads, dropout=self.dropout, batch_first=True) for _ in range(self.n_times)])
         self.lns = nn.ModuleList([nn.LayerNorm(self.d_model, self.layer_eps) for _ in range(self.n_times)])
 
-        self.attn_last = nn.MultiheadAttention(self.d_model, num_heads=num_heads, dropout=0.1, batch_first=True)
+        self.attn_last = nn.MultiheadAttention(self.d_model, num_heads=num_heads, dropout=self.dropout, batch_first=True)
         self.classifier = BertLMPredictionHead(self.d_model, self.layer_eps, 1, n_added_futures)
 
         self.criterion = CustomMSELoss(self.padding_idx)
@@ -241,7 +241,7 @@ class CustumBert(pl.LightningModule):
         for i in range(self.n_times):
             hidden_states = self.attns[i](atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask)[0]
             hidden_states = self.lns[i](hidden_states)
-        hidden_states = self.attn4(atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask)[0]
+        hidden_states = self.attn_last(atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask)[0]
         out = self.classifier(hidden_states, covs)
         return out
 
