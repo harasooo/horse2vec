@@ -325,7 +325,7 @@ def main(cfg: DictConfig):
         sampler=own_sampler,
         val_num=cfg.training.val_nun,
         target_key=cfg.training.target_key,
-        pad_idx=cfg.training.pad_idx,
+        pad_idx=cfg.model.pad_idx,
         emb_dim=cfg.model.d_model,
         worst_rank=cfg.model.worst_rank,
         n_added_futures=cfg.model.n_added_futures,
