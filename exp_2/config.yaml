@@ -1,0 +1,29 @@
+wandb:
+  project: horse2vec
+  exp_num: 2
+  exp_name: large
+  tags: [LARGR]
+path:
+  train_dic_path: "/content/drive/MyDrive/卒論/data/train_dict.pkl"
+  checkpoint_path: checkpoints
+  own_sampler_path: "/content/drive/MyDrive/卒論/data/own_sampler.pkl"
+  read_trin_dict: true
+model:
+  d_model: 300
+  pad_idx: 187255
+  worst_rank: 18
+  num_heads: 8
+  n_times: 8
+  n_added_futures: 16
+  dropout: 0.1
+training:
+  n_epochs: 2000
+  batch_size: 1024
+  val_nun: 300
+  learning_rate: 0.000001
+  layer_eps: 0.0001
+  target_key: "time"
+callbacks:
+  patience: 100
+  patience_min_delta: 0
+  save_top_k: 1
