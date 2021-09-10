@@ -12,7 +12,7 @@ model:
   d_model: 300
   pad_idx: 187255
   worst_rank: 18
-  num_heads: 8
+  num_heads: 6
   n_times: 8
   n_added_futures: 16
   dropout: 0.1
