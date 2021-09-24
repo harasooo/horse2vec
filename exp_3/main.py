@@ -291,10 +291,10 @@ class CustumBert(pl.LightningModule):
             self.d_model, self.layer_eps, 1, n_added_futures
         )
         self.rank_classifier = BertLMPredictionHead(
-            self.d_model, self.layer_eps, self.worst_rank, n_added_futures
+            self.d_model, self.layer_eps, 1, n_added_futures
         )
         self.time_criterion = CustomMSELoss(self.padding_idx)
-        self.rank_criterion = nn.CrossEntropyLoss(ignore_index=self.padding_idx)
+        self.rank_criterion = CustomMSELoss(self.padding_idx)
 
         for param in self.parameters():
             param.requires_grad = True
@@ -332,8 +332,9 @@ class CustumBert(pl.LightningModule):
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
         loss = (loss_1 + self.ranklambda * loss_2) / 2
+        print(rank_out.shape)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
-        return {"loss": loss, "batch_preds": time_out, "batch_labels": time_target}
+        return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
 
     def validation_step(self, batch, batch_idx):
         (
@@ -349,8 +350,9 @@ class CustumBert(pl.LightningModule):
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
         loss = (loss_1 + self.ranklambda * loss_2) / 2
+        print(rank_out.shape)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
-        return {"loss": loss, "batch_preds": time_out, "batch_labels": time_target}
+        return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
 
     def training_epoch_end(self, outputs, mode="train"):
         epoch_y_hats = torch.cat([x["batch_preds"] for x in outputs])
