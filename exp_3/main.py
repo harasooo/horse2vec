@@ -122,10 +122,6 @@ class HorseDataset(Dataset):
             data, "update_emb_id_after", "int"
         )
         covs = torch.Tensor(data["covatiates"])
-        print(covs.shape)
-        print(
-            torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures).shape
-        )
         covs = torch.cat(
             [covs, torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures)]
         )
