@@ -94,7 +94,7 @@ class HorseDataset(Dataset):
     def _to_pad_torch_type(self, data, key, dtype):
         trandform_data = torch.Tensor(data[key])
         if dtype == "int":
-            trandform_data = torch.Tensor(data[key]).to(torch.int64)
+            trandform_data = trandform_data.to(torch.int64)
         trandform_data = F.pad(
             trandform_data,
             (0, self.worst_rank - len(trandform_data)),
@@ -114,6 +114,7 @@ class HorseDataset(Dataset):
         data = self.train_dict[race_id]
         emb_id = self._to_pad_torch_type(data, "emb_id", "int")
         target_time = self._to_pad_torch_type(data, self.target_time_key, "float")
+        print(target_time.shape)
         target_rank = self._to_pad_torch_type(data, self.target_rank_key, "int")
         update_emb_id_before = self._to_pad_torch_type(
             data, "update_emb_id_before", "int"
