@@ -126,7 +126,7 @@ class HorseDataset(Dataset):
             [covs, torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures)]
         )
         mask = self._add_pad_mask(emb_id)
-        print(target_rank.shape)
+        print(target_rank.view(-1).shape)
         return (
             emb_id,
             covs,
