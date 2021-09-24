@@ -91,6 +91,7 @@ class HorseDataset(Dataset):
         )
 
     def _to_pad_torch_int(self, data, key):
+        print(data[key])
         trandform_data = torch.Tensor(data[key]).to(torch.int64)
         trandform_data = F.pad(
             trandform_data,
