@@ -10,7 +10,6 @@ import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchmetrics.functional import accuracy
 from omegaconf import DictConfig
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
@@ -126,7 +125,6 @@ class HorseDataset(Dataset):
             [covs, torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures)]
         )
         mask = self._add_pad_mask(emb_id)
-        print(target_rank.view(-1).shape)
         return (
             emb_id,
             covs,
@@ -289,10 +287,12 @@ class CustumBert(pl.LightningModule):
         self.attn_last = nn.MultiheadAttention(
             self.d_model, num_heads=num_heads, dropout=self.dropout, batch_first=True
         )
-        self.classifier = BertLMPredictionHead(
+        self.time_classifier = BertLMPredictionHead(
             self.d_model, self.layer_eps, 1, n_added_futures
         )
-
+        self.rank_classifier = BertLMPredictionHead(
+            self.d_model, self.layer_eps, self.worst_rank, n_added_futures
+        )
         self.time_criterion = CustomMSELoss(self.padding_idx)
         self.rank_criterion = nn.CrossEntropyLoss(ignore_index=self.padding_idx)
 
@@ -314,8 +314,8 @@ class CustumBert(pl.LightningModule):
         hidden_states = self.attn_last(
             atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask
         )[0]
-        time_out = self.classifier(hidden_states, covs)
-        rank_out = self.classifier(hidden_states, covs)
+        time_out = self.time_classifier(hidden_states, covs)
+        rank_out = self.rank_classifier(hidden_states, covs)
         return time_out, rank_out
 
     def training_step(self, batch, batch_idx):
