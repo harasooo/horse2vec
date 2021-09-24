@@ -10,6 +10,7 @@ import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchmetrics.functional import accuracy
 from omegaconf import DictConfig
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
@@ -19,7 +20,12 @@ from torch.utils.data import DataLoader, Dataset
 def make_time_horses_emb_table(df: pd.DataFrame):
     time_hores_emb_table = defaultdict(lambda: defaultdict(int))
     emb_id = 0
-    for ml in df[["horse_name_v", "race_id"]].groupby(["horse_name_v", "race_id"]).count().index:
+    for ml in (
+        df[["horse_name_v", "race_id"]]
+        .groupby(["horse_name_v", "race_id"])
+        .count()
+        .index
+    ):
         hores_id = ml[0]
         race_id = ml[1]
         time_hores_emb_table[hores_id][race_id] = emb_id
@@ -33,14 +39,24 @@ def make_train_dict(df: pd.DataFrame, time_hores_emb_table: dict) -> Dict:
         train_dict[id] = {
             "horses": df[df["race_id"] == id]["horse_name_v"].values,
             "time": df[df["race_id"] == id]["time_s"].values,
-            "covatiates": df[df["race_id"] == id].iloc[:, 7:].values
+            "covatiates": df[df["race_id"] == id].iloc[:, 7:].values,
+            "rank": df[df["race_id"] == id]["rank"].values,
         }
         emb_list = []
         update_list = []
         for hores_id in train_dict[id]["horses"]:
             emb_id = time_hores_emb_table[hores_id][id]
             emb_list.append(emb_id)
-            if len([v for k, v in time_hores_emb_table[hores_id].items() if v == (emb_id + 1)]) > 0:
+            if (
+                len(
+                    [
+                        v
+                        for k, v in time_hores_emb_table[hores_id].items()
+                        if v == (emb_id + 1)
+                    ]
+                )
+                > 0
+            ):
                 update_list.append(True)
             else:
                 update_list.append(False)
@@ -55,24 +71,33 @@ class HorseDataset(Dataset):
         self,
         train_dict: Dict[str, np.array],
         sampler: np.array,
-        target_key: str,
+        target_time_key: str,
+        target_rank_key: str,
         pad_idx: int,
         worst_rank: int,
-        n_added_futures: int
+        n_added_futures: int,
     ):
         self.train_dict = train_dict
         self.sampler = sampler
-        self.target_key = target_key
+        self.target_time_key = target_time_key
+        self.target_rank_key = target_rank_key
         self.pad_idx = pad_idx
         self.n_added_futures = n_added_futures
         self.worst_rank = worst_rank
 
     def _add_pad_mask(self, data: torch.Tensor):
-        return torch.Tensor([False if i != self.pad_idx else True for i in data]).to(torch.bool)
+        return torch.Tensor([False if i != self.pad_idx else True for i in data]).to(
+            torch.bool
+        )
 
-    def _to_pad_torch_int(self, data, key, pad=False):
+    def _to_pad_torch_int(self, data, key):
         trandform_data = torch.Tensor(data[key]).to(torch.int64)
-        trandform_data = F.pad(trandform_data, (0, self.worst_rank - len(trandform_data)), "constant", self.pad_idx).to(torch.int)
+        trandform_data = F.pad(
+            trandform_data,
+            (0, self.worst_rank - len(trandform_data)),
+            "constant",
+            self.pad_idx,
+        ).to(torch.int)
         return trandform_data
 
     def __len__(self):
@@ -81,14 +106,25 @@ class HorseDataset(Dataset):
     def __getitem__(self, index: int):
         race_id = self.sampler[index]
         data = self.train_dict[race_id]
-        emb_id = self. _to_pad_torch_int(data, "emb_id")
-        target = self. _to_pad_torch_int(data, self.target_key)
+        emb_id = self._to_pad_torch_int(data, "emb_id")
+        target_time = self._to_pad_torch_int(data, self.target_time_key)
+        target_rank = self._to_pad_torch_int(data, self.target_rank_key)
         update_emb_id_before = self._to_pad_torch_int(data, "update_emb_id_before")
         update_emb_id_after = self._to_pad_torch_int(data, "update_emb_id_after")
         covs = torch.Tensor(data["covatiates"])
-        covs = torch.cat([covs, torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures)])
+        covs = torch.cat(
+            [covs, torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures)]
+        )
         mask = self._add_pad_mask(emb_id)
-        return emb_id, covs, target, mask, update_emb_id_before, update_emb_id_after
+        return (
+            emb_id,
+            covs,
+            target_time,
+            target_rank,
+            mask,
+            update_emb_id_before,
+            update_emb_id_after,
+        )
 
 
 class BertPredictionHeadTransform(nn.Module):
@@ -108,7 +144,7 @@ class BertPredictionHeadTransform(nn.Module):
 class BertLMPredictionHead(nn.Module):
     def __init__(self, hidden_size, layer_norm_eps, vocab_size, n_futures):
         super().__init__()
-        self.transform = BertPredictionHeadTransform(hidden_size, layer_norm_eps) 
+        self.transform = BertPredictionHeadTransform(hidden_size, layer_norm_eps)
         self.decoder = nn.Linear((hidden_size + n_futures), vocab_size, bias=False)
         self.bias = nn.Parameter(torch.zeros(vocab_size))
         self.decoder.bias = self.bias
@@ -121,14 +157,13 @@ class BertLMPredictionHead(nn.Module):
 
 
 class CustomMSELoss(nn.Module):
-
     def __init__(self, ignored_index: int, size_average=None, reduce=None) -> None:
         super(CustomMSELoss, self).__init__()
         self.ignored_index = ignored_index
 
     def _mse_loss(self, input, target, ignored_index):
         mask = target == ignored_index
-        out = (input[~mask] - target[~mask])**2
+        out = (input[~mask] - target[~mask]) ** 2
         return out.mean()
 
     def forward(self, input, target):
@@ -141,18 +176,19 @@ class CreateDataModule(pl.LightningDataModule):
         train_dict: Dict[str, np.array],
         sampler: np.array,
         val_num: int,
-        target_key: str,
+        target_time_key: str,
+        target_rank_key: str,
         pad_idx: int,
-        emb_dim: int,
         worst_rank: int,
         n_added_futures: int,
-        batch_size: int
+        batch_size: int,
     ):
         super().__init__()
         self.train_dict = train_dict
         self.train_sampler = sampler[:-val_num]
         self.val_sampler = sampler[-val_num:]
-        self.target_key = target_key
+        self.target_time_key = target_time_key
+        self.target_rank_key = target_rank_key
         self.pad_idx = pad_idx
         self.batch_size = batch_size
         self.worst_rank = worst_rank
@@ -162,19 +198,21 @@ class CreateDataModule(pl.LightningDataModule):
         self.train_dataset = HorseDataset(
             self.train_dict,
             self.train_sampler,
-            self.target_key,
+            self.target_time_key,
+            self.target_rank_key,
             self.pad_idx,
             self.worst_rank,
-            self.n_added_futures
+            self.n_added_futures,
         )
 
         self.val_dataset = HorseDataset(
             self.train_dict,
             self.val_sampler,
-            self.target_key,
+            self.target_time_key,
+            self.target_rank_key,
             self.pad_idx,
             self.worst_rank,
-            self.n_added_futures
+            self.n_added_futures,
         )
 
     def train_dataloader(self):
@@ -206,7 +244,8 @@ class CustumBert(pl.LightningModule):
         n_times: int,
         n_added_futures: int,
         batch_size: int,
-        dropout: float
+        dropout: float,
+        ranklambda: float,
     ):
         super().__init__()
 
@@ -218,15 +257,33 @@ class CustumBert(pl.LightningModule):
         self.lr = learning_rate
         self.dropout = dropout
         self.n_times = n_times - 1
+        self.ranklambda = ranklambda
 
         self.emb = nn.Embedding(self.padding_idx + 1, self.d_model, self.padding_idx)
-        self.attns = nn.ModuleList([nn.MultiheadAttention(self.d_model, num_heads=num_heads, dropout=self.dropout, batch_first=True) for _ in range(self.n_times)])
-        self.lns = nn.ModuleList([nn.LayerNorm(self.d_model, self.layer_eps) for _ in range(self.n_times)])
+        self.attns = nn.ModuleList(
+            [
+                nn.MultiheadAttention(
+                    self.d_model,
+                    num_heads=num_heads,
+                    dropout=self.dropout,
+                    batch_first=True,
+                )
+                for _ in range(self.n_times)
+            ]
+        )
+        self.lns = nn.ModuleList(
+            [nn.LayerNorm(self.d_model, self.layer_eps) for _ in range(self.n_times)]
+        )
 
-        self.attn_last = nn.MultiheadAttention(self.d_model, num_heads=num_heads, dropout=self.dropout, batch_first=True)
-        self.classifier = BertLMPredictionHead(self.d_model, self.layer_eps, 1, n_added_futures)
+        self.attn_last = nn.MultiheadAttention(
+            self.d_model, num_heads=num_heads, dropout=self.dropout, batch_first=True
+        )
+        self.classifier = BertLMPredictionHead(
+            self.d_model, self.layer_eps, 1, n_added_futures
+        )
 
-        self.criterion = CustomMSELoss(self.padding_idx)
+        self.time_criterion = CustomMSELoss(self.padding_idx)
+        self.rank_criterion = nn.CrossEntropyLoss(ignore_index=self.padding_idx)
 
         for param in self.parameters():
             param.requires_grad = True
@@ -239,24 +296,50 @@ class CustumBert(pl.LightningModule):
     def forward(self, horses, covs, pad_mask):
         atten_inputs = self.emb(horses)
         for i in range(self.n_times):
-            hidden_states = self.attns[i](atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask)[0]
+            hidden_states = self.attns[i](
+                atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask
+            )[0]
             hidden_states = self.lns[i](hidden_states)
-        hidden_states = self.attn_last(atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask)[0]
-        out = self.classifier(hidden_states, covs)
-        return out
+        hidden_states = self.attn_last(
+            atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask
+        )[0]
+        time_out = self.classifier(hidden_states, covs)
+        rank_out = self.classifier(hidden_states, covs)
+        return time_out, rank_out
 
     def training_step(self, batch, batch_idx):
-        emb_id, covs, target, mask, update_emb_id_before, update_emb_id_after = batch
-        y_hat = self.forward(emb_id, covs, mask)
-        loss = self.criterion(y_hat, target)
+        (
+            emb_id,
+            covs,
+            time_target,
+            rank_target,
+            mask,
+            update_emb_id_before,
+            update_emb_id_after,
+        ) = batch
+        time_out, rank_out = self.forward(emb_id, covs, mask)
+        loss_1 = self.time_criterion(time_out, time_target)
+        loss_2 = self.rank_criterion(rank_out, rank_target)
+        loss = loss_1 + self.ranklambda * loss_2
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
-        return {"loss": loss, "batch_preds": y_hat, "batch_labels": target}
+        return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
 
     def validation_step(self, batch, batch_idx):
-        emb_id, covs, target, mask, update_emb_id_before, update_emb_id_after = batch
-        y_hat = self.forward(emb_id, covs, mask)
-        loss = self.criterion(y_hat, target)
-        return {"loss": loss, "batch_preds": y_hat, "batch_labels": target}
+        (
+            emb_id,
+            covs,
+            time_target,
+            rank_target,
+            mask,
+            update_emb_id_before,
+            update_emb_id_after,
+        ) = batch
+        time_out, rank_out = self.forward(emb_id, covs, mask)
+        loss_1 = self.time_criterion(time_out, time_target)
+        loss_2 = self.rank_criterion(rank_out, rank_target)
+        loss = loss_1 + self.ranklambda * loss_2
+        self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
+        return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
 
     def training_epoch_end(self, outputs, mode="train"):
         epoch_y_hats = torch.cat([x["batch_preds"] for x in outputs])
@@ -264,12 +347,19 @@ class CustumBert(pl.LightningModule):
         epoch_loss = self.criterion(epoch_y_hats, epoch_labels)
         self.log(f"{mode}_loss", epoch_loss)
 
+        _, epoch_preds = torch.max(epoch_y_hats, 1)
+        epoch_accuracy = accuracy(epoch_preds, epoch_labels)
+        self.log(f"{mode}_accuracy", epoch_accuracy)
+
     def validation_epoch_end(self, outputs, mode="val"):
         epoch_y_hats = torch.cat([x["batch_preds"] for x in outputs])
         epoch_labels = torch.cat([x["batch_labels"] for x in outputs])
         epoch_loss = self.criterion(epoch_y_hats, epoch_labels)
         self.log(f"{mode}_loss", epoch_loss)
-        print(epoch_loss)
+
+        _, epoch_preds = torch.max(epoch_y_hats, 1)
+        epoch_accuracy = accuracy(epoch_preds, epoch_labels)
+        self.log(f"{mode}_accuracy", epoch_accuracy)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr)
@@ -308,7 +398,7 @@ def main(cfg: DictConfig):
         wandb_logger.experiment.dir, cfg.path.checkpoint_path
     )
     wandb_logger.log_hyperparams(cfg)
- 
+
     if cfg.path.read_trin_dict is True:
         train_dict = pd.read_pickle(cfg.path.train_dic_path)
         own_sampler = pd.read_pickle(cfg.path.own_sampler_path)
@@ -316,18 +406,24 @@ def main(cfg: DictConfig):
         df = pd.read_csv(cfg.path.train_df_path)
         time_horses_emb_table = make_time_horses_emb_table(df)
         train_dict = make_train_dict(df, time_horses_emb_table)
-        own_sampler = df[["race_id", "date"]].groupby(["race_id"], as_index=False).max().sort_values("date")["race_id"].values
+        own_sampler = (
+            df[["race_id", "date"]]
+            .groupby(["race_id"], as_index=False)
+            .max()
+            .sort_values("date")["race_id"]
+            .values
+        )
 
     data_module = CreateDataModule(
         train_dict=train_dict,
         sampler=own_sampler,
         val_num=cfg.training.val_nun,
-        target_key=cfg.training.target_key,
+        target_time_key=cfg.training.target_time_key,
+        target_rank_key=cfg.training.target_rank_key,
         pad_idx=cfg.model.pad_idx,
-        emb_dim=cfg.model.d_model,
         worst_rank=cfg.model.worst_rank,
         n_added_futures=cfg.model.n_added_futures,
-        batch_size=cfg.training.batch_size
+        batch_size=cfg.training.batch_size,
     )
     data_module.setup()
 
@@ -336,7 +432,7 @@ def main(cfg: DictConfig):
         patience=cfg.callbacks.patience,
         checkpoint_path=checkpoint_path,
         save_top_k=cfg.callbacks.save_top_k,
-        model_name="exp_" + str(cfg.wandb.exp_name)
+        model_name="exp_" + str(cfg.wandb.exp_name),
     )
     model = CustumBert(
         d_model=cfg.model.d_model,
@@ -348,7 +444,8 @@ def main(cfg: DictConfig):
         n_times=cfg.model.n_times,
         dropout=cfg.model.dropout,
         n_added_futures=cfg.model.n_added_futures,
-        batch_size=cfg.training.batch_size
+        batch_size=cfg.training.batch_size,
+        ranklambda=cfg.training.ranklambda,
     )
 
     trainer = pl.Trainer(
