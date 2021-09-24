@@ -35,6 +35,7 @@ def make_time_horses_emb_table(df: pd.DataFrame):
 
 def make_train_dict(df: pd.DataFrame, time_hores_emb_table: dict) -> Dict:
     train_dict = {}
+    df["rank"] = df["rank"].map(lambda x: str(x).replace("(降)", "").replace("失", "18"))
     for id in df["race_id"].unique():
         train_dict[id] = {
             "horses": df[df["race_id"] == id]["horse_name_v"].values,
@@ -90,16 +91,20 @@ class HorseDataset(Dataset):
             torch.bool
         )
 
-    def _to_pad_torch_int(self, data, key):
-        print(data[key])
-        trandform_data = torch.Tensor(data[key]).to(torch.int64)
+    def _to_pad_torch_type(self, data, key, dtype):
+        trandform_data = torch.Tensor(data[key])
+        if dtype == "int":
+            trandform_data = torch.Tensor(data[key]).to(torch.int64)
         trandform_data = F.pad(
             trandform_data,
             (0, self.worst_rank - len(trandform_data)),
             "constant",
             self.pad_idx,
-        ).to(torch.int)
-        return trandform_data
+        )
+        if dtype == "int":
+            return trandform_data.to(torch.int)
+        else:
+            return trandform_data.to(torch.float)
 
     def __len__(self):
         return len(self.sampler)
@@ -107,11 +112,15 @@ class HorseDataset(Dataset):
     def __getitem__(self, index: int):
         race_id = self.sampler[index]
         data = self.train_dict[race_id]
-        emb_id = self._to_pad_torch_int(data, "emb_id")
-        target_time = self._to_pad_torch_int(data, self.target_time_key)
-        target_rank = self._to_pad_torch_int(data, self.target_rank_key)
-        update_emb_id_before = self._to_pad_torch_int(data, "update_emb_id_before")
-        update_emb_id_after = self._to_pad_torch_int(data, "update_emb_id_after")
+        emb_id = self._to_pad_torch_type(data, "emb_id", "int")
+        target_time = self._to_pad_torch_type(data, self.target_time_key, "float")
+        target_rank = self._to_pad_torch_type(data, self.target_rank_key, "int")
+        update_emb_id_before = self._to_pad_torch_type(
+            data, "update_emb_id_before", "int"
+        )
+        update_emb_id_after = self._to_pad_torch_type(
+            data, "update_emb_id_after", "int"
+        )
         covs = torch.Tensor(data["covatiates"])
         covs = torch.cat(
             [covs, torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures)]
