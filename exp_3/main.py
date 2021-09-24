@@ -332,7 +332,6 @@ class CustumBert(pl.LightningModule):
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
         loss = (loss_1 + self.ranklambda * loss_2) / 2
-        print(rank_out.shape)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
         return {
             "loss": loss,
@@ -356,7 +355,6 @@ class CustumBert(pl.LightningModule):
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
         loss = (loss_1 + self.ranklambda * loss_2) / 2
-        print(rank_out.shape)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
         return {
             "loss": loss,
@@ -405,12 +403,12 @@ def make_callbacks(min_delta, patience, checkpoint_path, save_top_k, model_name)
         filename=model_name,
         save_top_k=save_top_k,
         verbose=True,
-        monitor="val_loss",
+        monitor="val_total_loss",
         mode="min",
     )
 
     early_stop_callback = EarlyStopping(
-        monitor="val_loss", min_delta=min_delta, patience=patience, mode="min"
+        monitor="val_total_loss", min_delta=min_delta, patience=patience, mode="min"
     )
 
     return [early_stop_callback, checkpoint_callback]
