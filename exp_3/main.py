@@ -115,7 +115,6 @@ class HorseDataset(Dataset):
         emb_id = self._to_pad_torch_type(data, "emb_id", "int")
         target_time = self._to_pad_torch_type(data, self.target_time_key, "float")
         target_rank = self._to_pad_torch_type(data, self.target_rank_key, "int")
-        print(target_rank)
         update_emb_id_before = self._to_pad_torch_type(
             data, "update_emb_id_before", "int"
         )
@@ -316,6 +315,8 @@ class CustumBert(pl.LightningModule):
         )[0]
         time_out = self.classifier(hidden_states, covs)
         rank_out = self.classifier(hidden_states, covs)
+        print(time_out.shape)
+        print(rank_out.shape)
         return time_out, rank_out
 
     def training_step(self, batch, batch_idx):
