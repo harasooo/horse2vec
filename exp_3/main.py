@@ -332,9 +332,8 @@ class CustumBert(pl.LightningModule):
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
         loss = (loss_1 + self.ranklambda * loss_2) / 2
-        print(rank_out.shape)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
-        return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
+        return {"loss": loss, "batch_preds": time_out, "batch_labels": time_target}
 
     def validation_step(self, batch, batch_idx):
         (
@@ -350,9 +349,8 @@ class CustumBert(pl.LightningModule):
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
         loss = (loss_1 + self.ranklambda * loss_2) / 2
-        print(rank_out.shape)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
-        return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
+        return {"loss": loss, "batch_preds": time_out, "batch_labels": time_target}
 
     def training_epoch_end(self, outputs, mode="train"):
         epoch_y_hats = torch.cat([x["batch_preds"] for x in outputs])
@@ -360,19 +358,11 @@ class CustumBert(pl.LightningModule):
         epoch_loss = self.criterion(epoch_y_hats, epoch_labels)
         self.log(f"{mode}_loss", epoch_loss)
 
-        _, epoch_preds = torch.max(epoch_y_hats, 1)
-        epoch_accuracy = accuracy(epoch_preds, epoch_labels)
-        self.log(f"{mode}_accuracy", epoch_accuracy)
-
     def validation_epoch_end(self, outputs, mode="val"):
         epoch_y_hats = torch.cat([x["batch_preds"] for x in outputs])
         epoch_labels = torch.cat([x["batch_labels"] for x in outputs])
         epoch_loss = self.criterion(epoch_y_hats, epoch_labels)
         self.log(f"{mode}_loss", epoch_loss)
-
-        _, epoch_preds = torch.max(epoch_y_hats, 1)
-        epoch_accuracy = accuracy(epoch_preds, epoch_labels)
-        self.log(f"{mode}_accuracy", epoch_accuracy)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr)
