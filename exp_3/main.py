@@ -114,7 +114,6 @@ class HorseDataset(Dataset):
         data = self.train_dict[race_id]
         emb_id = self._to_pad_torch_type(data, "emb_id", "int")
         target_time = self._to_pad_torch_type(data, self.target_time_key, "float")
-        print(target_time.shape)
         target_rank = self._to_pad_torch_type(data, self.target_rank_key, "int")
         update_emb_id_before = self._to_pad_torch_type(
             data, "update_emb_id_before", "int"
@@ -123,6 +122,10 @@ class HorseDataset(Dataset):
             data, "update_emb_id_after", "int"
         )
         covs = torch.Tensor(data["covatiates"])
+        print(covs.shape)
+        print(
+            torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures).shape
+        )
         covs = torch.cat(
             [covs, torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures)]
         )
