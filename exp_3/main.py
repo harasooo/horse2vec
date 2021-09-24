@@ -383,12 +383,12 @@ class CustumBert(pl.LightningModule):
     def validation_epoch_end(self, outputs, mode="val"):
         time_epoch_y_hats = torch.cat([x["time_batch_preds"] for x in outputs])
         time_epoch_labels = torch.cat([x["time_batch_labels"] for x in outputs])
-        time_epoch_loss = self.criterion(time_epoch_y_hats, time_epoch_labels)
+        time_epoch_loss = self.time_criterion(time_epoch_y_hats, time_epoch_labels)
         self.log(f"{mode}_time_loss", time_epoch_loss)
 
         rank_epoch_y_hats = torch.cat([x["rank_batch_preds"] for x in outputs])
         rank_epoch_labels = torch.cat([x["rank_batch_labels"] for x in outputs])
-        rank_epoch_loss = self.criterion(rank_epoch_y_hats, rank_epoch_labels)
+        rank_epoch_loss = self.rank_criterion(rank_epoch_y_hats, rank_epoch_labels)
         self.log(f"{mode}_rank_loss", rank_epoch_loss)
 
         epoch_loss = (time_epoch_loss + self.ranklambda * rank_epoch_loss) / 2
