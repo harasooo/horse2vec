@@ -101,7 +101,7 @@ class HorseDataset(Dataset):
             self.pad_idx,
         )
         if dtype == "int":
-            return trandform_data.to(torch.int)
+            return trandform_data.to(torch.int64)
         else:
             return trandform_data.to(torch.float)
 
