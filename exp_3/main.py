@@ -313,6 +313,7 @@ class CustumBert(pl.LightningModule):
         hidden_states = self.attn_last(
             atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask
         )[0]
+        print(hidden_states.shape)
         time_out = self.classifier(hidden_states, covs)
         rank_out = self.classifier(hidden_states, covs)
         print(time_out.shape)
