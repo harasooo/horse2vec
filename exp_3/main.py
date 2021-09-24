@@ -334,7 +334,13 @@ class CustumBert(pl.LightningModule):
         loss = (loss_1 + self.ranklambda * loss_2) / 2
         print(rank_out.shape)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
-        return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
+        return {
+            "loss": loss,
+            "rank_batch_preds": rank_out,
+            "rank_batch_labels": rank_target,
+            "time_batch_preds": time_out,
+            "time_batch_labels": time_target,
+        }
 
     def validation_step(self, batch, batch_idx):
         (
@@ -352,19 +358,41 @@ class CustumBert(pl.LightningModule):
         loss = (loss_1 + self.ranklambda * loss_2) / 2
         print(rank_out.shape)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
-        return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
+        return {
+            "loss": loss,
+            "rank_batch_preds": rank_out,
+            "rank_batch_labels": rank_target,
+            "time_batch_preds": time_out,
+            "time_batch_labels": time_target,
+        }
 
     def training_epoch_end(self, outputs, mode="train"):
-        epoch_y_hats = torch.cat([x["batch_preds"] for x in outputs])
-        epoch_labels = torch.cat([x["batch_labels"] for x in outputs])
-        epoch_loss = self.criterion(epoch_y_hats, epoch_labels)
-        self.log(f"{mode}_loss", epoch_loss)
+        time_epoch_y_hats = torch.cat([x["time_batch_preds"] for x in outputs])
+        time_epoch_labels = torch.cat([x["time_batch_labels"] for x in outputs])
+        time_epoch_loss = self.criterion(time_epoch_y_hats, time_epoch_labels)
+        self.log(f"{mode}_time_loss", time_epoch_loss)
+
+        rank_epoch_y_hats = torch.cat([x["rank_batch_preds"] for x in outputs])
+        rank_epoch_labels = torch.cat([x["rank_batch_labels"] for x in outputs])
+        rank_epoch_loss = self.criterion(rank_epoch_y_hats, rank_epoch_labels)
+        self.log(f"{mode}_rank_loss", rank_epoch_loss)
+
+        epoch_loss = (time_epoch_loss + self.ranklambda * rank_epoch_loss) / 2
+        self.log(f"{mode}_total_loss", epoch_loss)
 
     def validation_epoch_end(self, outputs, mode="val"):
-        epoch_y_hats = torch.cat([x["batch_preds"] for x in outputs])
-        epoch_labels = torch.cat([x["batch_labels"] for x in outputs])
-        epoch_loss = self.criterion(epoch_y_hats, epoch_labels)
-        self.log(f"{mode}_loss", epoch_loss)
+        time_epoch_y_hats = torch.cat([x["time_batch_preds"] for x in outputs])
+        time_epoch_labels = torch.cat([x["time_batch_labels"] for x in outputs])
+        time_epoch_loss = self.criterion(time_epoch_y_hats, time_epoch_labels)
+        self.log(f"{mode}_time_loss", time_epoch_loss)
+
+        rank_epoch_y_hats = torch.cat([x["rank_batch_preds"] for x in outputs])
+        rank_epoch_labels = torch.cat([x["rank_batch_labels"] for x in outputs])
+        rank_epoch_loss = self.criterion(rank_epoch_y_hats, rank_epoch_labels)
+        self.log(f"{mode}_rank_loss", rank_epoch_loss)
+
+        epoch_loss = (time_epoch_loss + self.ranklambda * rank_epoch_loss) / 2
+        self.log(f"{mode}_total_loss", epoch_loss)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr)
