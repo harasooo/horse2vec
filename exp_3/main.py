@@ -126,6 +126,7 @@ class HorseDataset(Dataset):
             [covs, torch.zeros((self.worst_rank - covs.shape[0]), self.n_added_futures)]
         )
         mask = self._add_pad_mask(emb_id)
+        print(target_rank.shape)
         return (
             emb_id,
             covs,
@@ -328,7 +329,6 @@ class CustumBert(pl.LightningModule):
             update_emb_id_after,
         ) = batch
         time_out, rank_out = self.forward(emb_id, covs, mask)
-        print(rank_target.shape)
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
         loss = loss_1 + self.ranklambda * loss_2
