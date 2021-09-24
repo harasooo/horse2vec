@@ -331,7 +331,8 @@ class CustumBert(pl.LightningModule):
         time_out, rank_out = self.forward(emb_id, covs, mask)
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
-        loss = loss_1 + self.ranklambda * loss_2
+        loss = (loss_1 + self.ranklambda * loss_2) / 2
+        print(rank_out.shpae)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
         return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
 
@@ -348,7 +349,8 @@ class CustumBert(pl.LightningModule):
         time_out, rank_out = self.forward(emb_id, covs, mask)
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
-        loss = loss_1 + self.ranklambda * loss_2
+        loss = (loss_1 + self.ranklambda * loss_2) / 2
+        print(rank_out.shpae)
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
         return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
 
