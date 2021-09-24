@@ -268,6 +268,7 @@ class CustumBert(pl.LightningModule):
         self.dropout = dropout
         self.n_times = n_times - 1
         self.ranklambda = ranklambda
+        m = nn.Softmax(dim=1)
 
         self.emb = nn.Embedding(self.padding_idx + 1, self.d_model, self.padding_idx)
         self.attns = nn.ModuleList(
@@ -329,7 +330,7 @@ class CustumBert(pl.LightningModule):
         ) = batch
         time_out, rank_out = self.forward(emb_id, covs, mask)
         loss_1 = self.time_criterion(time_out, time_target)
-        loss_2 = self.rank_criterion(rank_out, rank_target)
+        loss_2 = self.rank_criterion(self.m(rank_out), rank_target)
         loss = loss_1 + self.ranklambda * loss_2
         self.update_furture_horse_vec(update_emb_id_before, update_emb_id_after)
         return {"loss": loss, "batch_preds": rank_out, "batch_labels": rank_target}
