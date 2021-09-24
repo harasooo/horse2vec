@@ -313,11 +313,8 @@ class CustumBert(pl.LightningModule):
         hidden_states = self.attn_last(
             atten_inputs, atten_inputs, atten_inputs, key_padding_mask=pad_mask
         )[0]
-        print(hidden_states.shape)
         time_out = self.classifier(hidden_states, covs)
         rank_out = self.classifier(hidden_states, covs)
-        print(time_out.shape)
-        print(rank_out.shape)
         return time_out, rank_out
 
     def training_step(self, batch, batch_idx):
@@ -331,6 +328,7 @@ class CustumBert(pl.LightningModule):
             update_emb_id_after,
         ) = batch
         time_out, rank_out = self.forward(emb_id, covs, mask)
+        print(rank_target.shape)
         loss_1 = self.time_criterion(time_out, time_target)
         loss_2 = self.rank_criterion(rank_out, rank_target)
         loss = loss_1 + self.ranklambda * loss_2
