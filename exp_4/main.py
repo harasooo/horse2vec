@@ -93,6 +93,21 @@ def find_all_unique_race_list(df: pd.DataFrame) -> List[List[int]]:
     return unique_race_list_list
 
 
+def rank_order(image):
+    flat_image = image.ravel()
+    sort_order = flat_image.argsort()
+    flat_image = flat_image[sort_order]
+    sort_rank = np.zeros_like(sort_order)
+    is_different = flat_image[:-1] != flat_image[1:]
+    np.cumsum(is_different, out=sort_rank[1:])
+    original_values = np.zeros((sort_rank[-1] + 1,), image.dtype)
+    original_values[0] = flat_image[0]
+    original_values[1:] = flat_image[1:][is_different]
+    int_image = np.zeros_like(sort_order)
+    int_image[sort_order] = sort_rank
+    return int_image.reshape(image.shape)
+
+
 class HorseDataset(Dataset):
     def __init__(
         self,
@@ -482,10 +497,10 @@ class CustumBert(pl.LightningModule):
         epoch_loss = (time_epoch_loss + self.ranklambda * rank_epoch_loss) / 2
         self.log(f"{mode}_total_loss", epoch_loss)
 
-        rank_epoch_y_hats_for_auc = np.argsort(
+        rank_epoch_y_hats_for_auc = rank_order(
             -rank_epoch_y_hats.view(-1).cpu().numpy()
         )
-        rank_epoch_labels_for_auc = np.argsort(
+        rank_epoch_labels_for_auc = rank_order(
             -rank_epoch_labels.view(-1).cpu().numpy()
         )
         top1_labels_for_auc = (rank_epoch_labels_for_auc == 0).astype(int)
@@ -506,10 +521,10 @@ class CustumBert(pl.LightningModule):
         epoch_loss = (time_epoch_loss + self.ranklambda * rank_epoch_loss) / 2
         self.log(f"{mode}_total_loss", epoch_loss)
 
-        rank_epoch_y_hats_for_auc = np.argsort(
+        rank_epoch_y_hats_for_auc = rank_order(
             -rank_epoch_y_hats.view(-1).cpu().numpy()
         )
-        rank_epoch_labels_for_auc = np.argsort(
+        rank_epoch_labels_for_auc = rank_order(
             -rank_epoch_labels.view(-1).cpu().numpy()
         )
         top1_labels_for_auc = (rank_epoch_labels_for_auc == 0).astype(int)
@@ -530,10 +545,10 @@ class CustumBert(pl.LightningModule):
         epoch_loss = (time_epoch_loss + self.ranklambda * rank_epoch_loss) / 2
         self.log(f"{mode}_total_loss", epoch_loss)
 
-        rank_epoch_y_hats_for_auc = np.argsort(
+        rank_epoch_y_hats_for_auc = rank_order(
             -rank_epoch_y_hats.view(-1).cpu().numpy()
         )
-        rank_epoch_labels_for_auc = np.argsort(
+        rank_epoch_labels_for_auc = rank_order(
             -rank_epoch_labels.view(-1).cpu().numpy()
         )
         top1_labels_for_auc = (rank_epoch_labels_for_auc == 0).astype(int)
