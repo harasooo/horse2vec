@@ -173,9 +173,6 @@ class HorseDataset(Dataset):
             mask_list.append(mask)
             update_emb_id_before_list.append(update_emb_id_before)
             update_emb_id_after_list.append(update_emb_id_after)
-            print(emb_id.shape)
-            print(covs.shape)
-            print(emb_id_list)
         return (
             torch.stack(emb_id_list),
             torch.stack(covs_list),
