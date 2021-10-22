@@ -391,8 +391,6 @@ class CustumBert(pl.LightningModule):
         )[0]
         time_out = self.time_classifier(hidden_states, covs)
         rank_out = self.rank_classifier(hidden_states, covs)
-        time_out[~pad_mask.unsqueeze(2)] = self.padding_idx
-        rank_out[~pad_mask.unsqueeze(2)] = self.padding_idx
         return time_out, rank_out
 
     def training_step(self, batch, batch_idx):
