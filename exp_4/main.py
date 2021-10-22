@@ -174,13 +174,13 @@ class HorseDataset(Dataset):
             update_emb_id_before_list.append(update_emb_id_before)
             update_emb_id_after_list.append(update_emb_id_after)
         return (
-            torch.tensor(emb_id_list),
-            torch.tensor(covs_list),
-            torch.tensor(target_time_list),
-            torch.tensor(target_rank_list),
-            torch.tensor(mask_list),
-            torch.tensor(update_emb_id_before_list),
-            torch.tensor(update_emb_id_after_list),
+            torch.Tensor(emb_id_list),
+            torch.Tensor(covs_list),
+            torch.Tensor(target_time_list),
+            torch.Tensor(target_rank_list),
+            torch.Tensor(mask_list),
+            torch.Tensor(update_emb_id_before_list),
+            torch.Tensor(update_emb_id_after_list),
         )
 
 
