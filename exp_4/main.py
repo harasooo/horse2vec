@@ -486,10 +486,8 @@ class CustumBert(pl.LightningModule):
             -rank_epoch_y_hats.view(-1).cpu().numpy()
         )
         rank_epoch_labels_for_auc = np.argsort(rank_epoch_labels.view(-1).cpu().numpy())
-        first_rank_epoch_y_hats_for_auc = (rank_epoch_y_hats_for_auc == 1).astype(int)
-        top_1_roc_score = roc_auc_score(
-            rank_epoch_labels_for_auc, first_rank_epoch_y_hats_for_auc
-        )
+        top1_labels_for_auc = (rank_epoch_labels_for_auc == 1).astype(int)
+        top_1_roc_score = roc_auc_score(top1_labels_for_auc, rank_epoch_y_hats_for_auc)
         self.log(f"{mode}_top_1_roc_score", top_1_roc_score)
 
     def validation_epoch_end(self, outputs, mode="val"):
@@ -510,10 +508,8 @@ class CustumBert(pl.LightningModule):
             -rank_epoch_y_hats.view(-1).cpu().numpy()
         )
         rank_epoch_labels_for_auc = np.argsort(rank_epoch_labels.view(-1).cpu().numpy())
-        first_rank_epoch_y_hats_for_auc = (rank_epoch_y_hats_for_auc == 1).astype(int)
-        top_1_roc_score = roc_auc_score(
-            rank_epoch_labels_for_auc, first_rank_epoch_y_hats_for_auc
-        )
+        top1_labels_for_auc = (rank_epoch_labels_for_auc == 1).astype(int)
+        top_1_roc_score = roc_auc_score(top1_labels_for_auc, rank_epoch_y_hats_for_auc)
         self.log(f"{mode}_top_1_roc_score", top_1_roc_score)
 
     def test_epoch_end(self, outputs, mode="test"):
@@ -534,10 +530,8 @@ class CustumBert(pl.LightningModule):
             -rank_epoch_y_hats.view(-1).cpu().numpy()
         )
         rank_epoch_labels_for_auc = np.argsort(rank_epoch_labels.view(-1).cpu().numpy())
-        first_rank_epoch_y_hats_for_auc = (rank_epoch_y_hats_for_auc == 1).astype(int)
-        top_1_roc_score = roc_auc_score(
-            rank_epoch_labels_for_auc, first_rank_epoch_y_hats_for_auc
-        )
+        top1_labels_for_auc = (rank_epoch_labels_for_auc == 1).astype(int)
+        top_1_roc_score = roc_auc_score(top1_labels_for_auc, rank_epoch_y_hats_for_auc)
         self.log(f"{mode}_top_1_roc_score", top_1_roc_score)
 
     def configure_optimizers(self):
