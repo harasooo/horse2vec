@@ -25,7 +25,7 @@ training:
   layer_eps: 0.00001
   target_time_key: "time"
   target_rank_key: "rank"
-  ranklambda: 6
+  ranklambda: 1
 callbacks:
   patience: 100
   patience_min_delta: 0
