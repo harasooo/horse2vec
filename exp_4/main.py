@@ -521,9 +521,7 @@ class CustumBert(pl.LightningModule):
         epoch_loss = (time_epoch_loss + self.ranklambda * rank_epoch_loss) / 2
         self.log(f"{mode}_total_loss", epoch_loss)
 
-        rank_epoch_y_hats_for_auc = rank_order(
-            -rank_epoch_y_hats.view(-1).cpu().numpy()
-        )
+        rank_epoch_y_hats_for_auc = rank_order(rank_epoch_y_hats.view(-1).cpu().numpy())
         rank_epoch_labels_for_auc = rank_order(
             -rank_epoch_labels.view(-1).cpu().numpy()
         )
