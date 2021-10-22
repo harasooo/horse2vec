@@ -500,9 +500,7 @@ class CustumBert(pl.LightningModule):
         rank_epoch_y_hats_for_auc = rank_order(
             -rank_epoch_y_hats.view(-1).cpu().numpy()
         )
-        rank_epoch_labels_for_auc = rank_order(
-            -rank_epoch_labels.view(-1).cpu().numpy()
-        )
+        rank_epoch_labels_for_auc = rank_order(rank_epoch_labels.view(-1).cpu().numpy())
         top1_labels_for_auc = (rank_epoch_labels_for_auc == 0).astype(int)
         top_1_roc_score = roc_auc_score(top1_labels_for_auc, rank_epoch_y_hats_for_auc)
         self.log(f"{mode}_top_1_roc_score", top_1_roc_score)
@@ -521,10 +519,10 @@ class CustumBert(pl.LightningModule):
         epoch_loss = (time_epoch_loss + self.ranklambda * rank_epoch_loss) / 2
         self.log(f"{mode}_total_loss", epoch_loss)
 
-        rank_epoch_y_hats_for_auc = rank_order(rank_epoch_y_hats.view(-1).cpu().numpy())
-        rank_epoch_labels_for_auc = rank_order(
-            -rank_epoch_labels.view(-1).cpu().numpy()
+        rank_epoch_y_hats_for_auc = rank_order(
+            -rank_epoch_y_hats.view(-1).cpu().numpy()
         )
+        rank_epoch_labels_for_auc = rank_order(rank_epoch_labels.view(-1).cpu().numpy())
         top1_labels_for_auc = (rank_epoch_labels_for_auc == 0).astype(int)
         top_1_roc_score = roc_auc_score(top1_labels_for_auc, rank_epoch_y_hats_for_auc)
         self.log(f"{mode}_top_1_roc_score", top_1_roc_score)
@@ -546,9 +544,7 @@ class CustumBert(pl.LightningModule):
         rank_epoch_y_hats_for_auc = rank_order(
             -rank_epoch_y_hats.view(-1).cpu().numpy()
         )
-        rank_epoch_labels_for_auc = rank_order(
-            -rank_epoch_labels.view(-1).cpu().numpy()
-        )
+        rank_epoch_labels_for_auc = rank_order(rank_epoch_labels.view(-1).cpu().numpy())
         top1_labels_for_auc = (rank_epoch_labels_for_auc == 0).astype(int)
         top_1_roc_score = roc_auc_score(top1_labels_for_auc, rank_epoch_y_hats_for_auc)
         self.log(f"{mode}_top_1_roc_score", top_1_roc_score)
