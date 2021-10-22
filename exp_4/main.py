@@ -556,7 +556,11 @@ class CustumBert(pl.LightningModule):
         self.log(f"{mode}_top_1_roc_score", top_1_roc_score)
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer, T_max=self.trainer.max_epochs
+        )
+        return [optimizer], [scheduler]
 
 
 def make_callbacks(min_delta, patience, checkpoint_path, save_top_k, model_name):
