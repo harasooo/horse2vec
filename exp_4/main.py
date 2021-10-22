@@ -177,13 +177,13 @@ class HorseDataset(Dataset):
             print(covs.shape)
             print(emb_id_list)
         return (
-            torch.Tensor(emb_id_list),
-            torch.Tensor(covs_list),
-            torch.Tensor(target_time_list),
-            torch.Tensor(target_rank_list),
-            torch.Tensor(mask_list),
-            torch.Tensor(update_emb_id_before_list),
-            torch.Tensor(update_emb_id_after_list),
+            torch.stack(emb_id_list),
+            torch.stack(covs_list),
+            torch.stack(target_time_list),
+            torch.stack(target_rank_list),
+            torch.stack(mask_list),
+            torch.stack(update_emb_id_before_list),
+            torch.stack(update_emb_id_after_list),
         )
 
 
