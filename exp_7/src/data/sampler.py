@@ -1,7 +1,7 @@
 from typing import List, Set
 
 import pandas as pd
-from src.utils import flatten
+from utils import flatten
 
 
 def find_unique_race_list(

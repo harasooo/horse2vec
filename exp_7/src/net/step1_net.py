@@ -50,21 +50,17 @@ class CustumBert(nn.Module):
         num_heads: int,
         n_times: int,
         n_added_futures: int,
-        batch_size: int,
         dropout: float,
-        ranklambda: float,
     ):
         super().__init__()
 
         self.padding_idx = padding_idx
         self.worst_rank = worst_rank
-        self.batch_size = batch_size
         self.d_model = d_model
         self.layer_eps = layer_eps
         self.lr = learning_rate
         self.dropout = dropout
         self.n_times = n_times - 1
-        self.ranklambda = ranklambda
 
         self.emb = nn.Embedding(self.padding_idx + 1, self.d_model, self.padding_idx)
         self.attns = nn.ModuleList(

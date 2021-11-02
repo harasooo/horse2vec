@@ -173,10 +173,9 @@ def make_train_dict(df: pd.DataFrame, time_hores_emb_table: dict) -> Dict:
 
 
 def raw_to_traindict(
-    raw_df_path: str, preprocessed_df_path: str, train_dict_path: str
+    raw_df: pd.DataFrame, preprocessed_df_path: str, train_dict_path: str
 ) -> Dict:
-    df = pd.read_csv(raw_df_path)
-    df = remove_noise(df)
+    df = remove_noise(raw_df)
     df = to_numerical(df, preprocessed_df_path)
     time_horses_emb_table = make_time_horses_emb_table(df)
     train_dict = make_train_dict(df, time_horses_emb_table)

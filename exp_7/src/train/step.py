@@ -1,19 +1,17 @@
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-import numpy as np
 
 
-def train_model_step(
+def train_step(
     model: nn.Module,
     train_loader: DataLoader,
-    test_loader: DataLoader,
     device: str,
     custum_batch_train: bool,
-    custum_batch_val: bool,
-    optimizer,
     time_criterion,
     rank_criterion,
+    optimizer,
     scheduler,
     ranklambda,
 ):
@@ -51,6 +49,9 @@ def train_model_step(
         update_emb_id_before = update_emb_id_before.to(device)
         update_emb_id_after = update_emb_id_after.to(device)
 
+        # reset grad
+        optimizer.zero_grad()
+
         # forward計算 & Loss計算
         time_out, rank_out = model.forward(emb_id, covs, mask)
         loss_1 = time_criterion(time_out, time_target)
@@ -76,6 +77,27 @@ def train_model_step(
     train_time_target = torch.cat(train_time_target_list, axis=0).cpu().detach().numpy()
     train_rank_target = torch.cat(train_rank_target_list, axis=0).cpu().detach().numpy()
 
+    return (
+        model,
+        optimizer,
+        scheduler,
+        np.mean(train_batch_loss),
+        train_time_out,
+        train_rank_out,
+        train_time_target,
+        train_rank_target,
+    )
+
+
+def val_step(
+    model: nn.Module,
+    test_loader: DataLoader,
+    device: str,
+    custum_batch_val: bool,
+    ranklambda,
+    time_criterion,
+    rank_criterion,
+):
     model.eval()
     test_batch_loss = []
     val_batch_loss = []
@@ -137,12 +159,7 @@ def train_model_step(
 
     return (
         model,
-        np.mean(train_batch_loss),
         np.mean(test_batch_loss),
-        train_time_out,
-        train_rank_out,
-        train_time_target,
-        train_rank_target,
         val_time_out,
         val_rank_out,
         val_time_target,

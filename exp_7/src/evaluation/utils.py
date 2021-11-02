@@ -1,14 +1,4 @@
-from collections import abc
-from typing import List, Generator
 import numpy as np
-
-
-def flatten(nested_list: List[List[int]]) -> Generator:
-    for el in nested_list:
-        if isinstance(el, abc.Iterable) and not isinstance(el, (str, bytes)):
-            yield from flatten(el)
-        else:
-            yield el
 
 
 def rank_order(image):

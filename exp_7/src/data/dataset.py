@@ -224,13 +224,6 @@ def get_leaked_dataloaders(
         n_added_futures,
     )
 
-    dataloader_dict["train_dataloader"] = DataLoader(
-        train_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=os.cpu_count(),
-    )
-
     dataloader_dict["train"] = DataLoader(
         train_dataset,
         batch_size=batch_size,
