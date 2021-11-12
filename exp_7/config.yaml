@@ -16,6 +16,7 @@ model:
   n_times: 8
   n_added_futures: 17
   dropout: 0.1
+  train_batch_size: 1024
 training:
   n_epochs: 4000
   batch_size: 1
