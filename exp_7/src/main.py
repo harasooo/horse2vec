@@ -57,6 +57,7 @@ def main(cfg: DictConfig):
         batch_size=cfg.model.train_batch_size,
     )
 
+    print(val_1_sampler)
     for i in dataloader_dict["val_1"]:
         print(i)
 
