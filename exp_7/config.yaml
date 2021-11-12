@@ -27,5 +27,7 @@ training:
   target_rank_key: "rank"
   ranklambda: 90
   device: "cuda"
+  custum_batch_train: False
+  custum_batch_val: True
 callbacks:
   patience: 100
