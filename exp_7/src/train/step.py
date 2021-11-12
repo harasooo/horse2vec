@@ -75,12 +75,8 @@ def train_step(
 
     # 予測値の結合
     oof: Dict[str, np.array] = {}
-    oof["time_out"] = (
-        torch.cat(train_time_out_list, axis=0).cpu().detach().numpy()
-    )
-    oof["rank_out"] = (
-        torch.cat(train_rank_out_list, axis=0).cpu().detach().numpy()
-    )
+    oof["time_out"] = torch.cat(train_time_out_list, axis=0).cpu().detach().numpy()
+    oof["rank_out"] = torch.cat(train_rank_out_list, axis=0).cpu().detach().numpy()
     oof["time_target"] = (
         torch.cat(train_time_target_list, axis=0).cpu().detach().numpy()
     )
@@ -153,16 +149,14 @@ def val_step(
             val_rank_target_list.append(rank_target)
             val_batch_loss.append(loss.item())
 
+    print(val_rank_out_list)
+    print(val_time_out_list)
     # 予測値の結合
     oof: Dict[str, np.array] = {}
     oof["time_out"] = torch.cat(val_time_out_list, axis=0).cpu().detach().numpy()
     oof["rank_out"] = torch.cat(val_rank_out_list, axis=0).cpu().detach().numpy()
-    oof["time_target"] = (
-        torch.cat(val_time_target_list, axis=0).cpu().detach().numpy()
-    )
-    oof["rank_target"] = (
-        torch.cat(val_rank_target_list, axis=0).cpu().detach().numpy()
-    )
+    oof["time_target"] = torch.cat(val_time_target_list, axis=0).cpu().detach().numpy()
+    oof["rank_target"] = torch.cat(val_rank_target_list, axis=0).cpu().detach().numpy()
 
     return (
         model,
