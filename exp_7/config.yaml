@@ -28,5 +28,3 @@ training:
   ranklambda: 90
 callbacks:
   patience: 100
-  patience_min_delta: 0
-  save_top_k: 1

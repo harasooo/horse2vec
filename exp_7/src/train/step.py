@@ -3,12 +3,14 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
+from typing import Dict
+
 
 def train_step(
     model: nn.Module,
     train_loader: DataLoader,
     device: str,
-    custum_batch_train: bool,
+    custum_batch: bool,
     time_criterion,
     rank_criterion,
     optimizer,
@@ -33,7 +35,7 @@ def train_step(
     ) in train_loader:
 
         # trainデータ
-        if custum_batch_train is True:
+        if custum_batch is True:
             emb_id = emb_id.squeeze()
             covs = covs.squeeze()
             time_target = time_target.squeeze()
@@ -72,28 +74,28 @@ def train_step(
         train_batch_loss.append(loss.item())
 
     # 予測値の結合
-    train_time_out = torch.cat(train_time_out_list, axis=0).cpu().detach().numpy()
-    train_rank_out = torch.cat(train_rank_out_list, axis=0).cpu().detach().numpy()
-    train_time_target = torch.cat(train_time_target_list, axis=0).cpu().detach().numpy()
-    train_rank_target = torch.cat(train_rank_target_list, axis=0).cpu().detach().numpy()
-
-    return (
-        model,
-        optimizer,
-        scheduler,
-        np.mean(train_batch_loss),
-        train_time_out,
-        train_rank_out,
-        train_time_target,
-        train_rank_target,
+    oof: Dict[str, np.array] = {}
+    oof["time_out"] = (
+        torch.cat(train_time_out_list, axis=0).cpu().detach().numpy()
     )
+    oof["rank_out"] = (
+        torch.cat(train_rank_out_list, axis=0).cpu().detach().numpy()
+    )
+    oof["time_target"] = (
+        torch.cat(train_time_target_list, axis=0).cpu().detach().numpy()
+    )
+    oof["rank_target"] = (
+        torch.cat(train_rank_target_list, axis=0).cpu().detach().numpy()
+    )
+
+    return (model, optimizer, scheduler, np.mean(train_batch_loss), oof)
 
 
 def val_step(
     model: nn.Module,
     test_loader: DataLoader,
     device: str,
-    custum_batch_val: bool,
+    custum_batch: bool,
     ranklambda,
     time_criterion,
     rank_criterion,
@@ -119,7 +121,7 @@ def val_step(
         ) in test_loader:
 
             # valデータ
-            if custum_batch_val is True:
+            if custum_batch is True:
                 emb_id = emb_id.squeeze()
                 covs = covs.squeeze()
                 time_target = time_target.squeeze()
@@ -152,16 +154,18 @@ def val_step(
             val_batch_loss.append(loss.item())
 
     # 予測値の結合
-    val_time_out = torch.cat(val_time_out_list, axis=0).cpu().detach().numpy()
-    val_rank_out = torch.cat(val_rank_out_list, axis=0).cpu().detach().numpy()
-    val_time_target = torch.cat(val_time_target_list, axis=0).cpu().detach().numpy()
-    val_rank_target = torch.cat(val_rank_target_list, axis=0).cpu().detach().numpy()
+    oof: Dict[str, np.array] = {}
+    oof["time_out"] = torch.cat(val_time_out_list, axis=0).cpu().detach().numpy()
+    oof["rank_out"] = torch.cat(val_rank_out_list, axis=0).cpu().detach().numpy()
+    oof["time_target"] = (
+        torch.cat(val_time_target_list, axis=0).cpu().detach().numpy()
+    )
+    oof["rank_target"] = (
+        torch.cat(val_rank_target_list, axis=0).cpu().detach().numpy()
+    )
 
     return (
         model,
         np.mean(test_batch_loss),
-        val_time_out,
-        val_rank_out,
-        val_time_target,
-        val_rank_target,
+        oof,
     )
