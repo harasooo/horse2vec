@@ -158,13 +158,13 @@ class CustumBatchHorseDataset(Dataset):
             update_emb_id_before_list.append(update_emb_id_before)
             update_emb_id_after_list.append(update_emb_id_after)
         return (
-            torch.cat(emb_id_list),
-            torch.cat(covs_list),
-            torch.cat(target_time_list),
-            torch.cat(target_rank_list),
-            torch.cat(mask_list),
-            torch.cat(update_emb_id_before_list),
-            torch.cat(update_emb_id_after_list),
+            torch.stack(emb_id_list).squeeze(),
+            torch.stack(covs_list).squeeze(),
+            torch.stack(target_time_list).squeeze(),
+            torch.stack(target_rank_list).squeeze(),
+            torch.stack(mask_list).squeeze(),
+            torch.stack(update_emb_id_before_list).squeeze(),
+            torch.stack(update_emb_id_after_list).squeeze(),
         )
 
 

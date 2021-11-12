@@ -117,14 +117,6 @@ def val_step(
         ) in test_loader:
 
             # valデータ
-            if custum_batch is True:
-                emb_id = emb_id.squeeze()
-                covs = covs.squeeze()
-                time_target = time_target.squeeze()
-                rank_target = rank_target.squeeze()
-                mask = mask.squeeze()
-                update_emb_id_before = update_emb_id_before.squeeze()
-                update_emb_id_after = update_emb_id_after.squeeze()
             emb_id = emb_id.to(device)
             covs = covs.to(device)
             time_target = time_target.to(device)
