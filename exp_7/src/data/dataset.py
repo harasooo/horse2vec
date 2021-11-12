@@ -204,6 +204,8 @@ def get_leaked_dataloaders(
         n_added_futures,
     )
 
+    print(val_1_dataset[0])
+
     val_2_dataset = CustumBatchHorseDataset(
         train_dict,
         val_2_sampler,
