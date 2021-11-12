@@ -21,7 +21,7 @@ from net.callbacks import EarlyStopper
 from net.optimizers import get_optimizers
 from net.step1_net import CustumBert
 from train.step import train_step, val_step
-from wandb.utils import transform_log_hyperparams
+from logger.utils import transform_log_hyperparams
 
 
 @hydra.main(config_path=".", config_name="config")
