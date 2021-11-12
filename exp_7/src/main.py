@@ -75,7 +75,7 @@ def main(cfg: DictConfig):
     )
 
     # step1_1(train)
-    train_es = EarlyStopper(max_patient=cfg.callbacks.patience)
+    train_es = EarlyStopper(max_patient=cfg.callbacks.patience, mode="min")
 
     # create metrics
     metrics_func_list = make_metrics_func_list()
@@ -120,7 +120,7 @@ def main(cfg: DictConfig):
             break
 
     # step1_2(to decide num epoch for test step)
-    val_es = EarlyStopper(max_patient=cfg.callbacks.patience)
+    val_es = EarlyStopper(max_patient=cfg.callbacks.patience, mode="min")
     BEST_EPOCH = 0
     while True:
         (model, optimizer, scheduler, train_batch_loss, train_eva_data,) = train_step(
