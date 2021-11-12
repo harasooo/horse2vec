@@ -67,7 +67,7 @@ def main(cfg: DictConfig):
         n_times=cfg.model.n_times,
         n_added_futures=cfg.model.n_added_futures,
         dropout=cfg.model.dropout,
-    )
+    ).to(cfg.training.device)
 
     # optimizerの設定
     optimizer, scheduler = get_optimizers(
