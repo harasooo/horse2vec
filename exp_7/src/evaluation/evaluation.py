@@ -10,9 +10,12 @@ def top_1_auc(oof: Dict[str, np.array]) -> Tuple[str, float]:
     rank_out = rank_order(oof["rank_out"])
     rank_target = oof["rank_target"].astype(int)
     top1_labels_for_auc = (rank_target == 1).astype(int)
-    top_1_auc_score = roc_auc_score(top1_labels_for_auc, rank_out)
     np.set_printoptions(threshold=10000000000)
+    print("raw")
     print(rank_target)
+    print("for_auc")
+    print(top1_labels_for_auc)
+    top_1_auc_score = roc_auc_score(top1_labels_for_auc, rank_out)
     return "top_1_auc", top_1_auc_score
 
 
