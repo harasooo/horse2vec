@@ -20,6 +20,7 @@ from evaluation.evaluation import make_metrics_func_list
 from net.callbacks import EarlyStopper
 from net.optimizers import get_optimizers
 from net.step1_net import CustumBert
+from net.custumloss import CustomMSELoss
 from train.step import train_step, val_step
 from logger.utils import transform_log_hyperparams
 
@@ -86,8 +87,8 @@ def main(cfg: DictConfig):
             train_loader=dataloader_dict["train"],
             device=cfg.training.device,
             custum_batch=cfg.training.custum_batch_train,
-            time_criterion=cfg.training.target_time_key,
-            rank_criterion=cfg.training.target_rank_key,
+            time_criterion=CustomMSELoss(cfg.model.pad_idx),
+            rank_criterion=CustomMSELoss(cfg.model.pad_idx),
             optimizer=optimizer,
             scheduler=scheduler,
             ranklambda=cfg.training.ranklambda,
@@ -97,8 +98,8 @@ def main(cfg: DictConfig):
             train_loader=dataloader_dict["val_1"],
             device=cfg.training.device,
             custum_batch=True,
-            time_criterion=cfg.training.target_time_key,
-            rank_criterion=cfg.training.target_rank_key,
+            time_criterion=CustomMSELoss(cfg.model.pad_idx),
+            rank_criterion=CustomMSELoss(cfg.model.pad_idx),
             ranklambda=cfg.training.ranklambda,
         )
 
@@ -128,8 +129,8 @@ def main(cfg: DictConfig):
             train_loader=dataloader_dict["val_1"],
             device=cfg.training.device,
             custum_batch=True,
-            time_criterion=cfg.training.target_time_key,
-            rank_criterion=cfg.training.target_rank_key,
+            time_criterion=CustomMSELoss(cfg.model.pad_idx),
+            rank_criterion=CustomMSELoss(cfg.model.pad_idx),
             optimizer=optimizer,
             scheduler=scheduler,
             ranklambda=cfg.training.ranklambda,
@@ -139,8 +140,8 @@ def main(cfg: DictConfig):
             train_loader=dataloader_dict["val_2"],
             device=cfg.training.device,
             custum_batch=True,
-            time_criterion=cfg.training.target_time_key,
-            rank_criterion=cfg.training.target_rank_key,
+            time_criterion=CustomMSELoss(cfg.model.pad_idx),
+            rank_criterion=CustomMSELoss(cfg.model.pad_idx),
             ranklambda=cfg.training.ranklambda,
         )
 
@@ -168,8 +169,8 @@ def main(cfg: DictConfig):
             train_loader=dataloader_dict["val_2"],
             device=cfg.training.device,
             custum_batch=True,
-            time_criterion=cfg.training.target_time_key,
-            rank_criterion=cfg.training.target_rank_key,
+            time_criterion=CustomMSELoss(cfg.model.pad_idx),
+            rank_criterion=CustomMSELoss(cfg.model.pad_idx),
             optimizer=optimizer,
             scheduler=scheduler,
             ranklambda=cfg.training.ranklambda,
@@ -179,8 +180,8 @@ def main(cfg: DictConfig):
             train_loader=dataloader_dict["test"],
             device=cfg.training.device,
             custum_batch=True,
-            time_criterion=cfg.training.target_time_key,
-            rank_criterion=cfg.training.target_rank_key,
+            time_criterion=CustomMSELoss(cfg.model.pad_idx),
+            rank_criterion=CustomMSELoss(cfg.model.pad_idx),
             ranklambda=cfg.training.ranklambda,
         )
 
