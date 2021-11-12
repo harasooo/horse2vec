@@ -95,7 +95,7 @@ def main(cfg: DictConfig):
         )
         (model, val_batch_loss, val_eva_data,) = val_step(
             model=model,
-            train_loader=dataloader_dict["val_1"],
+            test_loader=dataloader_dict["val_1"],
             device=cfg.training.device,
             custum_batch=True,
             time_criterion=CustomMSELoss(cfg.model.pad_idx),
@@ -137,7 +137,7 @@ def main(cfg: DictConfig):
         )
         (model, val_batch_loss, val_eva_data,) = val_step(
             model=model,
-            train_loader=dataloader_dict["val_2"],
+            test_loader=dataloader_dict["val_2"],
             device=cfg.training.device,
             custum_batch=True,
             time_criterion=CustomMSELoss(cfg.model.pad_idx),
@@ -177,7 +177,7 @@ def main(cfg: DictConfig):
         )
         (model, val_batch_loss, val_eva_data,) = val_step(
             model=model,
-            train_loader=dataloader_dict["test"],
+            test_loader=dataloader_dict["test"],
             device=cfg.training.device,
             custum_batch=True,
             time_criterion=CustomMSELoss(cfg.model.pad_idx),
