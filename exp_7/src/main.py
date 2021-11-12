@@ -57,6 +57,9 @@ def main(cfg: DictConfig):
         batch_size=cfg.model.train_batch_size,
     )
 
+    for i in dataloader_dict["val_1"]:
+        print(i)
+
     # modelの作成
     model = CustumBert(
         d_model=cfg.model.d_model,
