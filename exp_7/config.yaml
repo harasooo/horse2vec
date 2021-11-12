@@ -28,6 +28,5 @@ training:
   ranklambda: 90
   device: "cuda"
   custum_batch_train: false
-  custum_batch_val: true
 callbacks:
   patience: 100
