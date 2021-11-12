@@ -24,7 +24,7 @@ from train.step import train_step, val_step
 from logger.utils import transform_log_hyperparams
 
 
-@hydra.main(config_path=".", config_name="config")
+@hydra.main(config_path="../.", config_name="config")
 def main(cfg: DictConfig):
     wandb.init(config=(transform_log_hyperparams(cfg)))
 
