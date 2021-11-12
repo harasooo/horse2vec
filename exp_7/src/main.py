@@ -71,7 +71,7 @@ def main(cfg: DictConfig):
 
     # optimizerの設定
     optimizer, scheduler = get_optimizers(
-        model, cfg.trainning.n_epochs, cfg.model.learning_rate
+        model, cfg.training.n_epochs, cfg.model.learning_rate
     )
 
     # step1_1(train)
@@ -80,7 +80,7 @@ def main(cfg: DictConfig):
     # create metrics
     metrics_func_list = make_metrics_func_list()
 
-    for epoch in tqdm(range(cfg.trainning.n_epochs)):
+    for epoch in tqdm(range(cfg.training.n_epochs)):
         (model, optimizer, scheduler, train_batch_loss, train_eva_data,) = train_step(
             model=model,
             train_loader=dataloader_dict["train"],
