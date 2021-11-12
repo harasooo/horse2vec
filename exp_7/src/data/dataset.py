@@ -204,8 +204,6 @@ def get_leaked_dataloaders(
         n_added_futures,
     )
 
-    print(val_1_dataset[0])
-
     val_2_dataset = CustumBatchHorseDataset(
         train_dict,
         val_2_sampler,
@@ -239,6 +237,8 @@ def get_leaked_dataloaders(
         shuffle=False,
         num_workers=os.cpu_count(),
     )
+    a = iter(dataloader_dict["val_1"])
+    print(a.next())
 
     dataloader_dict["val_2"] = DataLoader(
         val_2_dataset,
@@ -246,6 +246,8 @@ def get_leaked_dataloaders(
         shuffle=False,
         num_workers=os.cpu_count(),
     )
+
+    print()
 
     dataloader_dict["test"] = DataLoader(
         test_dataset,
