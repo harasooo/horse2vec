@@ -29,4 +29,4 @@ training:
   device: "cuda"
   custum_batch_train: false
 callbacks:
-  patience: 100
+  patience: 10000
