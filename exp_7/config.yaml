@@ -17,14 +17,15 @@ model:
   n_added_futures: 17
   dropout: 0.1
   train_batch_size: 1024
+  learning_rate: 0.00001
+  layer_eps: 0.00001
 training:
   n_epochs: 4000
   batch_size: 1
   val_nun: 1
-  learning_rate: 0.00001
-  layer_eps: 0.00001
   target_time_key: "time"
   target_rank_key: "rank"
   ranklambda: 90
+  device: "cuda"
 callbacks:
   patience: 100
