@@ -1,0 +1,32 @@
+wandb:
+  project: horse2vec_strict_validation
+  exp_num: 8
+  exp_name: baseline
+  tags: [BASE]
+path:
+  train_dic_path: "/content/drive/MyDrive/卒論/data/train_dict.pkl"
+  train_df_path: "/content/drive/MyDrive/卒論/data/preprocessed_data.csv"
+  checkpoint_path: checkpoints
+  read_train_dict: true
+model:
+  d_model: 768
+  pad_idx: 187255
+  worst_rank: 18
+  num_heads: 6
+  n_times: 8
+  n_added_futures: 17
+  dropout: 0.1
+  train_batch_size: 1024
+  learning_rate: 0.00001
+  layer_eps: 0.00001
+training:
+  n_epochs: 4000
+  batch_size: 1
+  val_nun: 1
+  target_time_key: "time"
+  target_rank_key: "rank"
+  ranklambda: 90
+  device: "cuda"
+  custum_batch_train: false
+callbacks:
+  patience: 10000
