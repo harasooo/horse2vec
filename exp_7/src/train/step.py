@@ -87,6 +87,7 @@ def train_step(
     )
     print(time_out.size())
     print(oof["rank_out"].shape)
+    print(oof["rank_target"].shape)
 
     return (model, optimizer, scheduler, np.mean(train_batch_loss), oof)
 
