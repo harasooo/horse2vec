@@ -15,7 +15,7 @@ def top_1_auc(oof: Dict[str, np.array]) -> Tuple[str, float]:
 
 
 def top3_ndcg_score(oof: Dict[str, np.array]) -> Tuple[str, float]:
-    rank_out = rank_order(oof["rank_out"])
+    rank_out = rank_order(oof["rank_out"]) + 1
     rank_target = oof["rank_target"].astype(int)
     top_3_ndcg_score = ndcg_score(1 / rank_target, 1 / rank_out, k=3)
     return "top_3_ndcg", top_3_ndcg_score
@@ -30,7 +30,7 @@ def top_1_auc_from_time(oof: Dict[str, np.array]) -> Tuple[str, float]:
 
 
 def top3_ndcg_score_from_time(oof: Dict[str, np.array]) -> Tuple[str, float]:
-    rank_out = rank_order(oof["time_out"])
+    rank_out = rank_order(oof["time_out"]) + 1
     rank_target = oof["rank_target"].astype(int)
     top_3_ndcg_score = ndcg_score(1 / rank_target, 1 / rank_out, k=3)
     return "top_3_ndcg_from_time", top_3_ndcg_score
