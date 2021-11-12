@@ -106,7 +106,7 @@ def val_step(
 
     # val loop
     with torch.no_grad():
-        for (
+        (
             emb_id,
             covs,
             time_target,
@@ -114,32 +114,32 @@ def val_step(
             mask,
             update_emb_id_before,
             update_emb_id_after,
-        ) in test_loader:
+        ) = test_loader
 
-            # valデータ
-            emb_id = emb_id.to(device)
-            covs = covs.to(device)
-            time_target = time_target.to(device)
-            rank_target = rank_target.to(device)
-            mask = mask.to(device)
-            update_emb_id_before = update_emb_id_before.to(device)
-            update_emb_id_after = update_emb_id_after.to(device)
+        # valデータ
+        emb_id = emb_id.to(device)
+        covs = covs.to(device)
+        time_target = time_target.to(device)
+        rank_target = rank_target.to(device)
+        mask = mask.to(device)
+        update_emb_id_before = update_emb_id_before.to(device)
+        update_emb_id_after = update_emb_id_after.to(device)
 
-            # forward計算 & Loss計算
-            time_out, rank_out = model.forward(emb_id, covs, mask)
+        # forward計算 & Loss計算
+        time_out, rank_out = model.forward(emb_id, covs, mask)
 
-            # 予測値 & loss
-            loss_1 = time_criterion(time_out, time_target)
-            loss_2 = rank_criterion(rank_out, rank_target)
-            loss = (loss_1 + ranklambda * loss_2) / 2
-            test_batch_loss.append(loss.item())
+        # 予測値 & loss
+        loss_1 = time_criterion(time_out, time_target)
+        loss_2 = rank_criterion(rank_out, rank_target)
+        loss = (loss_1 + ranklambda * loss_2) / 2
+        test_batch_loss.append(loss.item())
 
-            # 予測値 & loss
-            val_time_out_list.append(time_out)
-            val_rank_out_list.append(rank_out)
-            val_time_target_list.append(time_target)
-            val_rank_target_list.append(rank_target)
-            val_batch_loss.append(loss.item())
+        # 予測値 & loss
+        val_time_out_list.append(time_out)
+        val_rank_out_list.append(rank_out)
+        val_time_target_list.append(time_target)
+        val_rank_target_list.append(rank_target)
+        val_batch_loss.append(loss.item())
 
     # 予測値の結合
     oof: Dict[str, np.array] = {}
