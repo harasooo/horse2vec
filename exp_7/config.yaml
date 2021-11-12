@@ -7,7 +7,7 @@ path:
   train_dic_path: "/content/drive/MyDrive/卒論/data/train_dict.pkl"
   train_df_path: "/content/drive/MyDrive/卒論/data/preprocessed_data.csv"
   checkpoint_path: checkpoints
-  read_trin_dict: true
+  read_train_dict: true
 model:
   d_model: 768
   pad_idx: 187255
