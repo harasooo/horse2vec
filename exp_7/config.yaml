@@ -1,13 +1,12 @@
 wandb:
   project: horse2vec
-  exp_num: 2
+  exp_num: 7
   exp_name: large_batch
   tags: [LARGR, larget_batch]
 path:
   train_dic_path: "/content/drive/MyDrive/卒論/data/train_dict.pkl"
   train_df_path: "/content/drive/MyDrive/卒論/data/preprocessed_data.csv"
   checkpoint_path: checkpoints
-  own_sampler_path: "/content/drive/MyDrive/卒論/data/own_sampler.pkl"
   read_trin_dict: true
 model:
   d_model: 768

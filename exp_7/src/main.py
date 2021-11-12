@@ -32,7 +32,10 @@ def main(cfg: DictConfig):
 
     # データの前処理
     raw_df = pd.read_csv(cfg.path.train_df_path)
-    train_dict = raw_to_traindict(raw_df, cfg.path.train_df_path)
+    if cfg.path.read_train_dict:
+        train_dict = pd.read_pickle(cfg.path.train_dic_path)
+    else:
+        train_dict = raw_to_traindict(raw_df, cfg.path.train_df_path)
     all_unique_race_list = find_all_unique_race_list(raw_df)
     # サンプラーの作成
     train_sampler = get_train_sampler_with_leak(all_unique_race_list)
