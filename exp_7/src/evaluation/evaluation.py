@@ -15,6 +15,8 @@ def top_1_auc(oof: Dict[str, np.array]) -> Tuple[str, float]:
     print(rank_target)
     print("for_auc")
     print(top1_labels_for_auc)
+    for i in top1_labels_for_auc:
+        print(np.sum(i))
     top_1_auc_score = roc_auc_score(top1_labels_for_auc, rank_out)
     return "top_1_auc", top_1_auc_score
 
