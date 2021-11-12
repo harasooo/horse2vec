@@ -58,6 +58,7 @@ def main(cfg: DictConfig):
     )
 
     print(val_1_sampler)
+    print(dataloader_dict)
     for i in dataloader_dict["val_1"]:
         print(i)
 
