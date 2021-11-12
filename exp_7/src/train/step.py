@@ -85,6 +85,8 @@ def train_step(
     oof["rank_target"] = (
         torch.cat(train_rank_target_list, axis=0).cpu().detach().numpy()
     )
+    print(time_out.size())
+    print(oof["rank_out"].shape)
 
     return (model, optimizer, scheduler, np.mean(train_batch_loss), oof)
 
