@@ -231,28 +231,9 @@ def get_leaked_dataloaders(
         num_workers=os.cpu_count(),
     )
 
-    dataloader_dict["val_1"] = DataLoader(
-        val_1_dataset,
-        batch_size=1,
-        shuffle=False,
-        num_workers=os.cpu_count(),
-    )
-    a = iter(dataloader_dict["val_1"])
-    print(a.next())
+    dataloader_dict["val_1"] = val_1_dataset[0]
 
-    dataloader_dict["val_2"] = DataLoader(
-        val_2_dataset,
-        batch_size=1,
-        shuffle=False,
-        num_workers=os.cpu_count(),
-    )
+    dataloader_dict["val_2"] = val_2_dataset[0]
 
-    print()
-
-    dataloader_dict["test"] = DataLoader(
-        test_dataset,
-        batch_size=1,
-        shuffle=False,
-        num_workers=os.cpu_count(),
-    )
+    dataloader_dict["test"] = test_dataset[0]
     return dataloader_dict
