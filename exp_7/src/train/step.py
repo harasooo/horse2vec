@@ -43,8 +43,6 @@ def train_step(
         mask = mask.to(device)
         update_emb_id_before = update_emb_id_before.to(device)
         update_emb_id_after = update_emb_id_after.to(device)
-        print(emb_id.size())
-        print(covs.size())
 
         # reset grad
         optimizer.zero_grad()
@@ -86,8 +84,6 @@ def train_step(
             mask = mask.to(device)
             update_emb_id_before = update_emb_id_before.to(device)
             update_emb_id_after = update_emb_id_after.to(device)
-            print(emb_id.size())
-            print(covs.size())
 
             # reset grad
             optimizer.zero_grad()

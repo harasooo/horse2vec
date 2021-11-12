@@ -9,7 +9,10 @@ from evaluation.utils import rank_order
 def top_1_auc(oof: Dict[str, np.array]) -> Tuple[str, float]:
     rank_out = rank_order(oof["rank_out"])
     rank_target = rank_order(oof["rank_target"])
+    print(rank_out)
     top1_labels_for_auc = (rank_target == 0).astype(int)
+    print(rank_target)
+    print(top1_labels_for_auc)
     top_1_auc_score = roc_auc_score(top1_labels_for_auc, rank_out)
     return "top_1_auc", top_1_auc_score
 
